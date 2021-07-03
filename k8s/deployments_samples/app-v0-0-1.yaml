@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nestjs-canary-demo
+  labels:
+    app: nestjs-canary-demo
+spec:
+  selector:
+    matchLabels:
+      app: nestjs-canary-demo
+  template:
+    metadata:
+      labels:
+        app: nestjs-canary-demo
+    spec:
+      containers:
+      - name: nestjs-canary-demo
+        image: gustavolopess/nestjs-canary-demo:0.0.1
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: version
+          value: "0.0.1"
+        ports:
+        - containerPort: 3001
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 3001
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 3001
+        resources:
+            limits:
+              cpu: 100m
+              memory: 256Mi
+            requests:
+              cpu: 50m
+              memory: 128Mi
+

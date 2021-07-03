@@ -1,0 +1,40 @@
+apiVersion: flagger.app/v1beta1
+kind: Canary
+metadata:
+  name: nestjs-canary-demo
+spec:
+  provider: istio
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: nestjs-canary-demo
+  progressDeadlineSeconds: 60
+  autoscalerRef:
+    apiVersion: autoscaling/v2beta1
+    kind: HorizontalPodAutoscaler
+    name: nestjs-canary-demo
+  service:
+    port: 80
+    targetPort: 3001
+    gateways:
+    - nestjs-canary-demo
+    hosts:
+    - nestjs-canary.demo.com
+  analysis:
+      interval: 1m
+      threshold: 3
+      maxWeight: 60
+      stepWeight: 20
+      metrics:
+      - name: request-success-rate
+        threshold: 99
+        interval: 1m
+      - name: latency
+        templateRef:
+          name: latency
+        thresholdRange:
+          max: 1000
+        interval: 1m
+
+
+  
