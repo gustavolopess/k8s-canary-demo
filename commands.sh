@@ -8,7 +8,7 @@ kubectl create namespace nestjs-canary-demo
 
 kubectl label namespace nestjs-canary-demo istio-injection=enabled
 
-kubectl -n nestjs-canary-demo apply -f k8s/deployments_sample/app-v0-0-1.yaml
+kubectl -n nestjs-canary-demo apply -f k8s/deployments_samples/app-v0-0-1.yaml
 kubectl -n nestjs-canary-demo apply -f k8s/hpa.yaml
 
 kubectl -n nestjs-canary-demo apply -f k8s/latency-metric.yaml
