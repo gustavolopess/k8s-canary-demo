@@ -93,7 +93,7 @@ if __name__ == '__main__':
     cluster_host = os.getenv('CLUSTER_HOST')
     service_account = os.getenv('NAMESPACE_SERVICEACCOUNT')
     username = f'system:serviceaccount:{service_account}:{namespace}:' 
-    
+
     configuration = client.Configuration(
         username=username, 
         host=cluster_host, 
@@ -124,5 +124,4 @@ if __name__ == '__main__':
             namespace, deployment_dict, pretty=True
         )
 
-    print(response)
     sys.exit(0)
