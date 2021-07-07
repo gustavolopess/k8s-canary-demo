@@ -1,6 +1,8 @@
 import sys
-from kubernetes import config, client
+import os
+from kubernetes import client
 from kubernetes.client.api.apps_v1_api import AppsV1Api
+from kubernetes.client.api.core_v1_api import CoreV1Api
 
 def generate_deployment_dict(
     app_name: str,
@@ -87,8 +89,21 @@ def deployment_exists(k8s_api: AppsV1Api, namespace: str, deployment_name: str) 
 if __name__ == '__main__':
     [app_name, namespace, docker_image, app_version] = sys.argv[1:]
 
-    config.load_kube_config()
-    k8s_v1_api = client.AppsV1Api()
+    token = os.getenv('SERVICEACCOUNT_TOKEN')
+    cluster_host = os.getenv('CLUSTER_HOST')
+    service_account = os.getenv('NAMESPACE_SERVICEACCOUNT')
+    username = f'system:serviceaccount:{service_account}:{namespace}:' 
+    
+    configuration = client.Configuration(
+        username=username, 
+        host=cluster_host, 
+        api_key={"authorization": "Bearer " + token},
+    )
+    configuration.verify_ssl = False
+
+    a_api_client = client.ApiClient(configuration)
+    
+    k8s_v1_api = client.AppsV1Api(a_api_client)
 
     deployment_dict = generate_deployment_dict(
         app_name=app_name,
