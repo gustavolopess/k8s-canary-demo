@@ -25,8 +25,21 @@ def get_canary_phase(custom_resources_k8s_api: CustomObjectsApi):
 
 
 if __name__ == '__main__':
-    config.load_kube_config()
-    custom_objects_api = client.CustomObjectsApi()
+    token = os.getenv('SERVICEACCOUNT_TOKEN')
+    cluster_host = os.getenv('CLUSTER_HOST')
+    service_account = os.getenv('NAMESPACE_SERVICEACCOUNT')
+    username = f'system:serviceaccount:{service_account}:nestjs-canary-demo:' 
+
+    configuration = client.Configuration(
+        username=username, 
+        host=cluster_host, 
+        api_key={"authorization": "Bearer " + token},
+    )
+    configuration.verify_ssl = False
+
+    a_api_client = client.ApiClient(configuration)
+    
+    custom_objects_api = client.CustomObjectsApi(a_api_client)
     
     application_url = sys.argv[-1]
 
