@@ -89,9 +89,23 @@ export SERVICEACCOUNT_TOKEN=$(\
     kubectl describe secret -n nestjs-canary-demo $SERVICEACCOUNT_SECRET | grep "token:" | awk '{print $2}'
 )
 
+# port forwarding (external -> loopback) with rinetd 
+sudo apt-get install -y rinetd
+
+echo "${NEWLINE}
+# bindadress    bindport  connectaddress  connectport${NEWLINE}
+0.0.0.0         8443      $(minikube ip)   8443${NEWLINE}
+0.0.0.0         8080      $(minikube ip)   $INGRESS_PORT${NEWLINE}
+
+# logging information${NEWLINE}
+logfile /var/log/rinetdn.log${NEWLINE}" > /etc/rinetd.conf
+
+/etc/init.d/rinetd restart
+
 echo -e "Env commands: \n\n\
-export CLUSTER_PORT=$INGRESS_PORT\n\n\
-export CLUSTER_HOST=http://ec2-54-91-87-13.compute-1.amazonaws.com:$INGRESS_PORT \n\n\
+export CLUSTER_PORT=8080\n\n\
+export CLUSTER_HOST=https://ec2-54-235-4-216.compute-1.amazonaws.com:8443 \n\n\
+export APPLICATION_URL=http://ec2-54-235-4-216.compute-1.amazonaws.com:8080/error/0 \n\n\
 export SERVICEACCOUNT_TOKEN=$SERVICEACCOUNT_TOKEN \n\n\
 export NAMESPACE_SERVICEACCOUNT=github-actions-deployer \n\n\
 export NAMESPACE=nestjs-canary-demo\n\n"

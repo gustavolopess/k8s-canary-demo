@@ -3,6 +3,11 @@ import os
 from kubernetes import client
 from kubernetes.client.api.apps_v1_api import AppsV1Api
 from kubernetes.client.api.core_v1_api import CoreV1Api
+from datetime import datetime
+from requests.packages.urllib3.exceptions import InsecureRequestWarning
+import warnings
+
+warnings.simplefilter('ignore', InsecureRequestWarning)
 
 def generate_deployment_dict(
     app_name: str,
@@ -17,6 +22,9 @@ def generate_deployment_dict(
             "labels": {
                 "app": app_name
             },
+            "annotations": {
+                "timestamp": str(datetime.now())
+            },
             "name": app_name,
             "namespace": namespace,
         },
@@ -30,6 +38,9 @@ def generate_deployment_dict(
                 "metadata": {
                     "labels": {
                         "app": app_name
+                    },
+                    "annotation": {
+                        "sidecar.istio.io/rewriteAppHTTPProber": "false"
                     }
                 },
                 "spec": {
@@ -92,7 +103,7 @@ if __name__ == '__main__':
     token = os.getenv('SERVICEACCOUNT_TOKEN')
     cluster_host = os.getenv('CLUSTER_HOST')
     service_account = os.getenv('NAMESPACE_SERVICEACCOUNT')
-    username = f'system:serviceaccount:{service_account}:{namespace}:' 
+    username = f'system:serviceaccount:nestjs-canary-demo:github-actions-deployer' 
 
     configuration = client.Configuration(
         username=username, 
@@ -113,12 +124,7 @@ if __name__ == '__main__':
     )
 
     if deployment_exists(k8s_v1_api, namespace, deployment_name=app_name):
-        response =  k8s_v1_api.patch_namespaced_deployment(
-            app_name,
-            namespace,
-            deployment_dict,
-            pretty=True
-        ) 
+        k8s_v1_api.replace_namespaced_deployment(app_name, namespace, deployment_dict)
     else:
         response = k8s_v1_api.create_namespaced_deployment(
             namespace, deployment_dict, pretty=True

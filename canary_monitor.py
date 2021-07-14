@@ -1,9 +1,13 @@
 import sys
 import os
 import time
-from kubernetes import client, config
+from kubernetes import client
 from kubernetes.client.api.custom_objects_api import CustomObjectsApi
 import requests
+from requests.packages.urllib3.exceptions import InsecureRequestWarning
+import warnings
+
+warnings.simplefilter('ignore', InsecureRequestWarning)
 
 PHASE_SUCCEEDED = 'Succeeded'
 PHASE_FAILED = 'Failed'
@@ -11,6 +15,7 @@ PHASE_INITIALIZING = 'Initializing'
 PHASE_PROMOTING = 'Promoting'
 PHASE_PROGRESSING = 'Progressing'
 PHASE_NOT_FOUND = 'Not Found'
+PHASE_FINALISING = 'Finalising'
 
 
 def get_canary_phase(custom_resources_k8s_api: CustomObjectsApi):
@@ -29,6 +34,7 @@ if __name__ == '__main__':
     cluster_host = os.getenv('CLUSTER_HOST')
     service_account = os.getenv('NAMESPACE_SERVICEACCOUNT')
     username = f'system:serviceaccount:{service_account}:nestjs-canary-demo:' 
+    application_url = os.getenv('APPLICATION_URL')
 
     configuration = client.Configuration(
         username=username, 
@@ -40,19 +46,20 @@ if __name__ == '__main__':
     a_api_client = client.ApiClient(configuration)
     
     custom_objects_api = client.CustomObjectsApi(a_api_client)
-    
-    application_url = sys.argv[-1]
 
     phase = get_canary_phase(custom_objects_api)
-    has_progressed = False    
 
-    while not has_progressed or phase in [PHASE_PROGRESSING, PHASE_INITIALIZING, PHASE_PROMOTING]:
+    has_progressed = False
+    
+    while not has_progressed or phase not in [PHASE_SUCCEEDED, PHASE_FAILED, PHASE_NOT_FOUND]:
         print(f'\nCurrent phase: {phase}')
         print(
             requests.get(application_url, headers={'Host': 'nestjs-canary.demo.com'}).content.decode()
         )
         
-        has_progressed = phase == PHASE_PROGRESSING 
+        if not has_progressed:
+            has_progressed = phase == PHASE_PROGRESSING
+
         phase = get_canary_phase(custom_objects_api)
         
         time.sleep(1.5)
