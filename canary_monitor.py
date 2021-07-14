@@ -55,7 +55,7 @@ if __name__ == '__main__':
         has_progressed = phase == PHASE_PROGRESSING 
         phase = get_canary_phase(custom_objects_api)
         
-        time.sleep(1)
+        time.sleep(1.5)
         
 
     if phase in [PHASE_FAILED, PHASE_NOT_FOUND]:
