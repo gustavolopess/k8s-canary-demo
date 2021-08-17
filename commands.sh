@@ -41,22 +41,26 @@ curl -LO https://github.com/gustavolopess/k8s-canary-demo/archive/refs/heads/mai
 unzip main.zip
 cd k8s-canary-demo-main
 
+# apply prometheus to istio
 kubectl apply --filename https://raw.githubusercontent.com/istio/istio/release-1.8/samples/addons/prometheus.yaml
 
+# apply flagger to istio
 kubectl apply --kustomize github.com/weaveworks/flagger/kustomize/istio
 
+# create application's namespace
 kubectl create namespace nestjs-canary-demo
-
+# inject istio's sidecar on this namespace
 kubectl label namespace nestjs-canary-demo istio-injection=enabled
 
+# create the hpa
 kubectl -n nestjs-canary-demo apply -f k8s/hpa.yaml
 
-kubectl -n nestjs-canary-demo apply -f k8s/deployments_samples/app-v0-0-1.yaml
-
-kubectl -n nestjs-canary-demo apply -f k8s/latency-metric.yaml
-
+# create an istion's gateway and an flagger's canary into application's namesapce
 kubectl -n nestjs-canary-demo apply -f k8s/flagger-canary.yaml
 kubectl -n nestjs-canary-demo apply -f k8s/istio-gateway.yaml 
+
+
+kubectl -n nestjs-canary-demo apply -f k8s/latency-metric.yaml
 
 # create authorizations
 kubectl -n nestjs-canary-demo apply -f k8s/authorizations.yaml
@@ -64,6 +68,11 @@ kubectl auth can-i --as=system:serviceaccount:nestjs-canary-demo:github-actions-
 kubectl auth can-i --as=system:serviceaccount:nestjs-canary-demo:github-actions-deployer list deployment
 
 kubectl -n nestjs-canary-demo describe canary
+
+# deploy a first version
+kubectl -n nestjs-canary-demo apply -f k8s/deployments_samples/app-v0-0-1.yaml
+# wait deployment finish and then deploy a second version
+kubectl -n nestjs-canary-demo apply -f k8s/deployments_samples/app-v0-0-2.yaml
 
 # In another terminal
 # for i in {1..10}; do 
@@ -92,6 +101,7 @@ export SERVICEACCOUNT_TOKEN=$(\
 # port forwarding (external -> loopback) with rinetd 
 sudo apt-get install -y rinetd
 
+# bind port 8443 to minikube and 8080 to application
 echo "${NEWLINE}
 # bindadress    bindport  connectaddress  connectport${NEWLINE}
 0.0.0.0         8443      $(minikube ip)   8443${NEWLINE}
