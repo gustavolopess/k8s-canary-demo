@@ -6,6 +6,7 @@ from kubernetes.client.api.custom_objects_api import CustomObjectsApi
 import requests
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 import warnings
+import time
 
 warnings.simplefilter('ignore', InsecureRequestWarning)
 
@@ -51,6 +52,7 @@ if __name__ == '__main__':
 
     has_progressed = False
     
+    time_checkpoint = time.time()
     while not has_progressed or phase not in [PHASE_SUCCEEDED, PHASE_FAILED, PHASE_NOT_FOUND]:
         print(f'\nCurrent phase: {phase}')
         print(
@@ -58,7 +60,12 @@ if __name__ == '__main__':
         )
         
         if not has_progressed:
+            time_checkpoint = time.time()
             has_progressed = phase == PHASE_PROGRESSING
+
+        if time.time() - time_checkpoint > 300:
+            print('Timed out')
+            sys.exit(1)
 
         phase = get_canary_phase(custom_objects_api)
         
