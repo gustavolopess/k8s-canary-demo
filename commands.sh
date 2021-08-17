@@ -104,7 +104,7 @@ sudo apt-get install -y rinetd
 # bind port 8443 to minikube and 8080 to application
 echo "${NEWLINE}
 # bindadress    bindport  connectaddress  connectport${NEWLINE}
-0.0.0.0         8443      $(minikube ip)   8443${NEWLINE}
+#0.0.0.0         8443      $(minikube ip)   8443${NEWLINE}
 0.0.0.0         8080      $(minikube ip)   $INGRESS_PORT${NEWLINE}
 
 # logging information${NEWLINE}

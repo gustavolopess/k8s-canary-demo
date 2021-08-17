@@ -123,6 +123,7 @@ if __name__ == '__main__':
         app_version=app_version
     )
 
+
     if deployment_exists(k8s_v1_api, namespace, deployment_name=app_name):
         k8s_v1_api.replace_namespaced_deployment(app_name, namespace, deployment_dict)
     else:
