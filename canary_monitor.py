@@ -29,6 +29,23 @@ def get_canary_phase(custom_resources_k8s_api: CustomObjectsApi):
     return ret.get('status', dict()).get('phase', PHASE_NOT_FOUND)
 
 
+def monitor_canary_analysis() -> str:
+    has_progressed = False
+    
+    while not has_progressed:
+        print(f'\nCurrent phase: {phase}')
+        print(
+            requests.get(application_url, headers={'Host': 'nestjs-canary.demo.com'}).content.decode()
+        )
+        
+        if not has_progressed:
+            has_progressed = phase == PHASE_PROGRESSING
+
+        phase = get_canary_phase(custom_objects_api)
+        
+        time.sleep(1.5)
+
+
 if __name__ == '__main__':
     token = os.getenv('SERVICEACCOUNT_TOKEN')
     cluster_host = os.getenv('CLUSTER_HOST')
@@ -47,27 +64,11 @@ if __name__ == '__main__':
     
     custom_objects_api = client.CustomObjectsApi(a_api_client)
 
-    phase = get_canary_phase(custom_objects_api)
+    last_phase = monitor_canary_analysis()
 
-    has_progressed = False
-    
-    while not has_progressed or phase not in [PHASE_SUCCEEDED, PHASE_FAILED, PHASE_NOT_FOUND]:
-        print(f'\nCurrent phase: {phase}')
-        print(
-            requests.get(application_url, headers={'Host': 'nestjs-canary.demo.com'}).content.decode()
-        )
-        
-        if not has_progressed:
-            has_progressed = phase == PHASE_PROGRESSING
-
-        phase = get_canary_phase(custom_objects_api)
-        
-        time.sleep(1.5)
-        
-
-    if phase in [PHASE_FAILED, PHASE_NOT_FOUND]:
-        print(f'Canary failed: phase={phase}')
+    if last_phase in [PHASE_FAILED, PHASE_NOT_FOUND]:
+        print(f'Canary failed: phase={last_phase}')
         sys.exit(1)
     
-    print(f'Canary succeeded: phase={phase}')
+    print(f'Canary succeeded: phase={last_phase}')
     sys.exit(0)
