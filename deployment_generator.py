@@ -6,6 +6,7 @@ from kubernetes.client.api.core_v1_api import CoreV1Api
 from datetime import datetime
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 import warnings
+import uuid
 
 warnings.simplefilter('ignore', InsecureRequestWarning)
 
@@ -40,7 +41,8 @@ def generate_deployment_dict(
                         "app": app_name
                     },
                     "annotation": {
-                        "sidecar.istio.io/rewriteAppHTTPProber": "false"
+                        "sidecar.istio.io/rewriteAppHTTPProber": "false",
+                        "timestamp": str(datetime.now())
                     }
                 },
                 "spec": {
@@ -50,7 +52,11 @@ def generate_deployment_dict(
                                 {
                                     "name": "version",
                                     "value": app_version
-                                }
+                                },
+                                {
+                                    "name": "deployment_id",
+                                    "value": str(uuid.uuid4())
+                                },
                             ],
                             "image": f'{docker_image}:{app_version}',
                             "imagePullPolicy": "IfNotPresent",

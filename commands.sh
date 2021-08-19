@@ -114,8 +114,8 @@ logfile /var/log/rinetdn.log${NEWLINE}" > /etc/rinetd.conf
 
 echo -e "Env commands: \n\n\
 export CLUSTER_PORT=8080\n\n\
-export CLUSTER_HOST=https://ec2-54-235-4-216.compute-1.amazonaws.com:8443 \n\n\
-export APPLICATION_URL=http://ec2-54-235-4-216.compute-1.amazonaws.com:8080/error/0 \n\n\
+export CLUSTER_HOST=https://ec2-3-80-38-40.compute-1.amazonaws.com:8443 \n\n\
+export APPLICATION_URL=http://ec2-3-80-38-40.compute-1.amazonaws.com:8080/error/0 \n\n\
 export SERVICEACCOUNT_TOKEN=$SERVICEACCOUNT_TOKEN \n\n\
 export NAMESPACE_SERVICEACCOUNT=github-actions-deployer \n\n\
 export NAMESPACE=nestjs-canary-demo\n\n"

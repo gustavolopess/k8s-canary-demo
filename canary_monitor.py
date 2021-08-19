@@ -51,12 +51,14 @@ if __name__ == '__main__':
     phase = get_canary_phase(custom_objects_api)
 
     has_progressed = False
-    
     time_checkpoint = time.time()
     while not has_progressed or phase not in [PHASE_SUCCEEDED, PHASE_FAILED, PHASE_NOT_FOUND]:
         print(f'\nCurrent phase: {phase}')
         print(
-            requests.get(application_url, headers={'Host': 'nestjs-canary.demo.com'}).content.decode()
+            requests
+                .get(application_url, headers={'Host': 'nestjs-canary.demo.com'})
+                .content
+                .decode()
         )
         
         if not has_progressed:
@@ -71,7 +73,6 @@ if __name__ == '__main__':
         
         time.sleep(1.5)
         
-
     if phase in [PHASE_FAILED, PHASE_NOT_FOUND]:
         print(f'Canary failed: phase={phase}')
         sys.exit(1)
