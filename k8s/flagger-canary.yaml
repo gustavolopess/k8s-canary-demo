@@ -29,9 +29,7 @@ spec:
       - name: request-success-rate
         threshold: 99
         interval: 1m
-      - name: latency
-        templateRef:
-          name: latency
+      - name: request-duration
         thresholdRange:
           max: 1000
         interval: 1m
