@@ -65,7 +65,7 @@ if __name__ == '__main__':
             time_checkpoint = time.time()
             has_progressed = phase == PHASE_PROGRESSING
 
-        if time.time() - time_checkpoint > 300:
+        if time.time() - time_checkpoint > 60 * 30:
             print('Timed out')
             sys.exit(1)
 
