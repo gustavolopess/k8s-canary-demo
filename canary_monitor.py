@@ -50,6 +50,8 @@ if __name__ == '__main__':
 
     phase = get_canary_phase(custom_objects_api)
 
+    print('Will send traffic to', application_url)
+
     has_progressed = False
     time_checkpoint = time.time()
     while not has_progressed or phase not in [PHASE_SUCCEEDED, PHASE_FAILED, PHASE_NOT_FOUND]:
